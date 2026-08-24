@@ -17,6 +17,7 @@ import java.util.HashMap;
 import java.util.IdentityHashMap;
 import java.util.Map;
 import java.util.Set;
+import java.util.function.Predicate;
 import java.util.regex.Pattern;
 
 @Retention(RetentionPolicy.RUNTIME)
@@ -46,19 +47,23 @@ public @interface OnEntityPropertyChanged {
             final Listener listener;
             final Pattern classPattern;
             final Pattern propertyPattern;
+            final Predicate<DTClass> entityFilter;
             final IdentityHashMap<DTClass, Map<FieldPath, Boolean>> propertyMatches = new IdentityHashMap<>();
 
-            Adapter(int listenerIndex, Listener listener, OnEntityPropertyChanged annotation) {
+            Adapter(int listenerIndex, Listener listener, OnEntityPropertyChanged annotation, Predicate<DTClass> entityFilter) {
                 this.listenerIndex = listenerIndex;
                 this.listener = listener;
                 var cp = annotation.classPattern();
                 var pp = annotation.propertyPattern();
                 this.classPattern = MATCH_ALL.equals(cp) ? null : Pattern.compile(cp);
                 this.propertyPattern = MATCH_ALL.equals(pp) ? null : Pattern.compile(pp);
+                this.entityFilter = entityFilter;
             }
 
             boolean classMatches(DTClass dtClass) {
-                return classPattern == null || classPattern.matcher(dtClass.getDtName()).matches();
+                return classPattern == null
+                        ? entityFilter.test(dtClass)
+                        : classPattern.matcher(dtClass.getDtName()).matches();
             }
 
             boolean propertyMatches(DTClass dtClass, FieldPath fp) {
@@ -82,7 +87,12 @@ public @interface OnEntityPropertyChanged {
             var els = listeners();
             adapters = new Adapter[els.length];
             for (int i = 0; i < els.length; i++) {
-                adapters[i] = new Adapter(i, (Listener) els[i].getListenerSam(), els[i].getAnnotation());
+                adapters[i] = new Adapter(
+                        i,
+                        (Listener) els[i].getListenerSam(),
+                        els[i].getAnnotation(),
+                        runner.getFilters()::allowsEntity
+                );
             }
         }
 
