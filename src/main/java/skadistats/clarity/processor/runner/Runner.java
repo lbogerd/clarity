@@ -9,6 +9,8 @@ public interface Runner {
     int getTick();
     EngineType getEngineType();
     ClarityExceptionHandler getExceptionHandler();
-    RunnerFilters getFilters();
+    default RunnerFilters getFilters() {
+        return RunnerFilters.ALL;
+    }
 
 }

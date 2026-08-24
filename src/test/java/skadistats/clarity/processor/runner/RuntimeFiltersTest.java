@@ -22,6 +22,7 @@ import skadistats.clarity.wire.shared.demo.proto.Demo;
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Method;
 import java.util.Set;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import static org.testng.Assert.assertEquals;
@@ -102,7 +103,11 @@ public class RuntimeFiltersTest {
     @Test
     public void explicitClassPatternTakesPriorityForPropertyChangedListener() {
         var rejectedClass = new TestDTClass("CDOTA_Unit_Hero_Axe");
-        var runner = rejectingEntityRunner(rejectedClass);
+        var allowCatchAll = new AtomicBoolean(false);
+        var runner = new TestRunner(new RunnerFilters(
+                messageClass -> true,
+                dtClass -> allowCatchAll.get()
+        ));
         var catchAllCalls = new AtomicInteger();
         var explicitCalls = new AtomicInteger();
         var catchAll = listener(EntityListeners.class, "catchAllPropertyChanged", OnEntityPropertyChanged.class);
@@ -119,6 +124,12 @@ public class RuntimeFiltersTest {
 
         assertEquals(catchAllCalls.get(), 0);
         assertEquals(explicitCalls.get(), 1);
+
+        allowCatchAll.set(true);
+        event.raise(new Entity(0, 0, 0, rejectedClass), FIELD_PATH);
+
+        assertEquals(catchAllCalls.get(), 1, "the run-time predicate is evaluated for every dispatch");
+        assertEquals(explicitCalls.get(), 2);
     }
 
     @Test
