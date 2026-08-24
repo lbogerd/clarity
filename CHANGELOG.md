@@ -1,5 +1,14 @@
 # Clarity 2 Changelog
 
+## Unreleased
+
+**New features**
+
+* add `RunnerFilters` for run-time filtering of catch-all message and entity listeners.
+* keep typed message listeners and explicit entity class patterns independent from run-time filters.
+* skip nested user-message payload parsing when no listener accepts the resolved message type.
+* keep entity decoding and state updates complete when entity callbacks are filtered.
+
 ## May 10, 2026: Version 4.0.1 released
 
 **Fixes**

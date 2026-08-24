@@ -54,7 +54,9 @@ For example code, please see the separate project [clarity-examples](https://git
 
 ## Run-time Listener Filters
 
-`SimpleRunner` can filter the messages and entity classes delivered to catch-all listeners at run time. For example, these exact sets exclude tick messages and two hero entity classes:
+`SimpleRunner` can filter the messages and entity classes delivered to catch-all listeners at run time. The existing `SimpleRunner(Source)` constructor uses `RunnerFilters.ALL`, so it still delivers all data.
+
+The following example excludes one exact message type and two exact entity classes:
 
 ```java
 Set<Class<? extends GeneratedMessage>> excludedMessages = Set.of(
@@ -75,7 +77,9 @@ try (var source = new MappedFileSource(path)) {
 }
 ```
 
-Explicit message types and entity `classPattern` values in listener annotations take priority over these filters. Entity filters reduce listener callbacks, but do not stop entity decoding or state updates.
+The message predicate applies only to catch-all `@OnMessage` and `@OnPostEmbeddedMessage` listeners. A listener with an explicit message type, such as `@OnMessage(CSVCMsg_PacketEntities.class)`, still receives that type. Clarity does not parse a nested user-message payload when no typed listener or accepted catch-all listener needs it.
+
+The entity predicate applies only when an entity listener uses the default `classPattern = ".*"`. An explicit `classPattern` takes priority. Entity filters reduce listener callbacks, but do not stop entity decoding or state updates.
 
 # License
 
