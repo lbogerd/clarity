@@ -52,6 +52,31 @@ Depending on your project build, use one of the following
 
 For example code, please see the separate project [clarity-examples](https://github.com/skadistats/clarity-examples).
 
+## Run-time Listener Filters
+
+`SimpleRunner` can filter the messages and entity classes delivered to catch-all listeners at run time. For example, these exact sets exclude tick messages and two hero entity classes:
+
+```java
+Set<Class<? extends GeneratedMessage>> excludedMessages = Set.of(
+    CommonNetworkBaseTypes.CNETMsg_Tick.class
+);
+Set<String> excludedEntityClasses = Set.of(
+    "CDOTA_Unit_Hero_Axe",
+    "CDOTA_Unit_Hero_Bane"
+);
+
+var filters = new RunnerFilters(
+    messageClass -> !excludedMessages.contains(messageClass),
+    dtClass -> !excludedEntityClasses.contains(dtClass.getDtName())
+);
+
+try (var source = new MappedFileSource(path)) {
+    new SimpleRunner(source, filters).runWith(processor);
+}
+```
+
+Explicit message types and entity `classPattern` values in listener annotations take priority over these filters. Entity filters reduce listener callbacks, but do not stop entity decoding or state updates.
+
 # License
 
 See [LICENSE](/LICENSE) in the project root.
