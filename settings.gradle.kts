@@ -9,7 +9,7 @@ if (file("../clarity-protobuf").exists())
 
 nmcpSettings {
     centralPortal {
-        username = providers.gradleProperty("mavenCentralUsername").get()
-        password = providers.gradleProperty("mavenCentralPassword").get()
+        username = providers.gradleProperty("mavenCentralUsername").orNull
+        password = providers.gradleProperty("mavenCentralPassword").orNull
     }
 }
