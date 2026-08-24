@@ -26,7 +26,11 @@ public abstract class AbstractFileRunner extends AbstractRunner implements FileR
     protected boolean synthetic = true;
 
     public AbstractFileRunner(Source source, EngineType engineType) throws IOException {
-        super(engineType);
+        this(source, engineType, RunnerFilters.ALL);
+    }
+
+    public AbstractFileRunner(Source source, EngineType engineType, RunnerFilters filters) throws IOException {
+        super(engineType, filters);
         this.source = source;
         this.tick = -1;
     }
