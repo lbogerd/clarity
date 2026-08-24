@@ -40,7 +40,11 @@ public class SimpleRunner extends AbstractFileRunner {
     };
 
     public SimpleRunner(Source s) throws IOException {
-        super(s, s.determineEngineType());
+        this(s, RunnerFilters.ALL);
+    }
+
+    public SimpleRunner(Source s, RunnerFilters filters) throws IOException {
+        super(s, s.determineEngineType(), filters);
         this.loopController = new LoopController(controllerFunc);
     }
 

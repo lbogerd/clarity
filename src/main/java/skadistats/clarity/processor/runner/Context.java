@@ -28,6 +28,10 @@ public class Context {
         return executionModel.getRunner().getEngineType();
     }
 
+    public RunnerFilters getFilters() {
+        return executionModel.getRunner().getFilters();
+    }
+
     public float getMillisPerTick() {
         return contextData.getMillisPerTick();
     }

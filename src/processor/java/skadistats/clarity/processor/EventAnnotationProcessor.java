@@ -62,6 +62,7 @@ public class EventAnnotationProcessor extends AbstractProcessor {
     private static final ClassName EVENT_BASE = ClassName.get("skadistats.clarity.event", "Event");
     private static final ClassName EVENT_LISTENER = ClassName.get("skadistats.clarity.event", "EventListener");
     private static final ClassName RUNNER = ClassName.get("skadistats.clarity.processor.runner", "Runner");
+    private static final ClassName RUNNER_FILTERS = ClassName.get("skadistats.clarity.processor.runner", "RunnerFilters");
 
     private final TreeSet<String> providerClasses = new TreeSet<>();
 
@@ -293,6 +294,7 @@ public class EventAnnotationProcessor extends AbstractProcessor {
                         ParameterizedTypeName.get(ClassName.get(java.util.Map.class), classWildcard, entryArrayType),
                         "byClass", Modifier.PRIVATE, Modifier.FINAL
                 ).build())
+                .addField(FieldSpec.builder(RUNNER_FILTERS, "filters", Modifier.PRIVATE, Modifier.FINAL).build())
                 .addField(FieldSpec.builder(entryArrayType, "wildcardEntries", Modifier.PRIVATE, Modifier.FINAL).build());
 
         // Constructor
@@ -302,6 +304,7 @@ public class EventAnnotationProcessor extends AbstractProcessor {
                 .addParameter(ParameterizedTypeName.get(ClassName.get(Class.class), annotationClassName), "eventType")
                 .addParameter(listenerSetType, "listenerSet")
                 .addStatement("super(runner, eventType, listenerSet)")
+                .addStatement("this.filters = runner.getFilters()")
                 .addStatement("var els = listeners()")
                 .addStatement("$T<$T, $T<Entry>> buckets = new $T<>()",
                         java.util.Map.class, classWildcard, java.util.List.class, java.util.HashMap.class)
@@ -328,7 +331,7 @@ public class EventAnnotationProcessor extends AbstractProcessor {
                 .addModifiers(Modifier.PUBLIC)
                 .returns(boolean.class)
                 .addParameter(classWildcard, "messageClass")
-                .addStatement("return byClass.containsKey(messageClass) || wildcardEntries.length > 0")
+                .addStatement("return byClass.containsKey(messageClass) || (wildcardEntries.length > 0 && filters.allowsMessage(messageClass))")
                 .build());
 
         // raise() method
@@ -355,11 +358,13 @@ public class EventAnnotationProcessor extends AbstractProcessor {
                 .endControlFlow()
                 .endControlFlow()
                 .endControlFlow()
+                .beginControlFlow("if (wildcardEntries.length > 0 && filters.allowsMessage($L.getClass()))", firstParamName)
                 .beginControlFlow("for (var e : wildcardEntries)")
                 .beginControlFlow("try")
                 .addStatement("e.listener.invoke($L)", paramNames)
                 .nextControlFlow("catch ($T t)", Throwable.class)
                 .addStatement("handleListenerException(e.listenerIndex, t)")
+                .endControlFlow()
                 .endControlFlow()
                 .endControlFlow();
 

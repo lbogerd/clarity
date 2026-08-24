@@ -7,6 +7,7 @@ import skadistats.clarity.model.DTClass;
 import skadistats.clarity.model.Entity;
 import skadistats.clarity.model.FieldPath;
 import skadistats.clarity.processor.runner.Runner;
+import skadistats.clarity.processor.runner.RunnerFilters;
 
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
@@ -39,6 +40,7 @@ public @interface OnEntityPropertyChanged {
         private static final Adapter[] EMPTY = new Adapter[0];
 
         private final Adapter[] adapters;
+        private final RunnerFilters filters;
         private final IdentityHashMap<DTClass, Adapter[]> adaptersByClass = new IdentityHashMap<>();
 
         private static final class Adapter {
@@ -79,6 +81,7 @@ public @interface OnEntityPropertyChanged {
 
         public Event(Runner runner, Class<OnEntityPropertyChanged> eventType, Set<EventListener<OnEntityPropertyChanged>> listeners) {
             super(runner, eventType, listeners);
+            filters = runner.getFilters();
             var els = listeners();
             adapters = new Adapter[els.length];
             for (int i = 0; i < els.length; i++) {
@@ -103,6 +106,7 @@ public @interface OnEntityPropertyChanged {
             var interested = adaptersFor(e.getDtClass());
             var dtClass = e.getDtClass();
             for (var a : interested) {
+                if (a.classPattern == null && !filters.allowsEntity(dtClass)) continue;
                 if (!a.propertyMatches(dtClass, fp)) continue;
                 try {
                     a.listener.invoke(e, fp);

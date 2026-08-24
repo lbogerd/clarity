@@ -225,7 +225,7 @@ public class InputSourceProcessor {
                         var umClazz = engineType.userMessagePacketClassForKind(userMessage.getMsgType());
                         if (umClazz == null) {
                             logUnknownMessage("usermessage", userMessage.getMsgType());
-                        } else {
+                        } else if (evOnMessage.isListenedTo(umClazz)) {
                             evOnMessage.raise(Packet.parse(umClazz, userMessage.getMsgData()));
                         }
                     }

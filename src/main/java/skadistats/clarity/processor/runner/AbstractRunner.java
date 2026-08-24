@@ -9,6 +9,8 @@ import skadistats.clarity.io.Util;
 import skadistats.clarity.logger.PrintfLoggerFactory;
 import skadistats.clarity.model.EngineType;
 
+import static java.util.Objects.requireNonNull;
+
 @Provides({OnInit.class})
 public abstract class AbstractRunner implements Runner {
 
@@ -18,11 +20,17 @@ public abstract class AbstractRunner implements Runner {
     private OnInit.Event evInitRun;
 
     protected final EngineType engineType;
+    protected final RunnerFilters filters;
     protected Context context;
     protected ClarityExceptionHandler exceptionHandler = (eventType, parameters, throwable) -> Util.uncheckedThrow(throwable);
 
     public AbstractRunner(EngineType engineType) {
+        this(engineType, RunnerFilters.ALL);
+    }
+
+    public AbstractRunner(EngineType engineType, RunnerFilters filters) {
         this.engineType = engineType;
+        this.filters = requireNonNull(filters, "filters");
     }
 
     private ExecutionModel createExecutionModel(Object... processors) {
@@ -63,6 +71,11 @@ public abstract class AbstractRunner implements Runner {
     @Override
     public ClarityExceptionHandler getExceptionHandler() {
         return exceptionHandler;
+    }
+
+    @Override
+    public RunnerFilters getFilters() {
+        return filters;
     }
 
     public void setExceptionHandler(ClarityExceptionHandler exceptionHandler) {

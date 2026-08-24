@@ -27,6 +27,7 @@ import skadistats.clarity.model.state.EntityState;
 import skadistats.clarity.processor.reader.OnMessage;
 import skadistats.clarity.processor.reader.OnReset;
 import skadistats.clarity.processor.reader.ResetPhase;
+import skadistats.clarity.processor.runner.Context;
 import skadistats.clarity.processor.runner.OnInit;
 import skadistats.clarity.processor.sendtables.DTClasses;
 import skadistats.clarity.processor.sendtables.UsesDTClasses;
@@ -104,54 +105,66 @@ public class Entities {
     private OnEntityUpdatesCompleted.Event evUpdatesCompleted;
 
     @Initializer(OnEntityCreated.class)
-    public void initOnEntityCreated(final EventListener<OnEntityCreated> listener) {
+    public void initOnEntityCreated(final Context context, final EventListener<OnEntityCreated> listener) {
         var classPattern = listener.getAnnotation().classPattern();
-        if (!".*".equals(classPattern)) {
+        if (".*".equals(classPattern)) {
+            listener.setFilter((OnEntityCreated.Filter) e -> context.getFilters().allowsEntity(e.getDtClass()));
+        } else {
             final var matcher = classPatternMatchers.computeIfAbsent(classPattern, ClassPatternMatcher::new);
             listener.setFilter((OnEntityCreated.Filter) e -> matcher.matches(e.getDtClass()));
         }
     }
 
     @Initializer(OnEntityDeleted.class)
-    public void initOnEntityDeleted(final EventListener<OnEntityDeleted> listener) {
+    public void initOnEntityDeleted(final Context context, final EventListener<OnEntityDeleted> listener) {
         var classPattern = listener.getAnnotation().classPattern();
-        if (!".*".equals(classPattern)) {
+        if (".*".equals(classPattern)) {
+            listener.setFilter((OnEntityDeleted.Filter) e -> context.getFilters().allowsEntity(e.getDtClass()));
+        } else {
             final var matcher = classPatternMatchers.computeIfAbsent(classPattern, ClassPatternMatcher::new);
             listener.setFilter((OnEntityDeleted.Filter) e -> matcher.matches(e.getDtClass()));
         }
     }
 
     @Initializer(OnEntityUpdated.class)
-    public void initOnEntityUpdated(final EventListener<OnEntityUpdated> listener) {
+    public void initOnEntityUpdated(final Context context, final EventListener<OnEntityUpdated> listener) {
         var classPattern = listener.getAnnotation().classPattern();
-        if (!".*".equals(classPattern)) {
+        if (".*".equals(classPattern)) {
+            listener.setFilter((OnEntityUpdated.Filter) (e, fps, n) -> context.getFilters().allowsEntity(e.getDtClass()));
+        } else {
             final var matcher = classPatternMatchers.computeIfAbsent(classPattern, ClassPatternMatcher::new);
             listener.setFilter((OnEntityUpdated.Filter) (e, fps, n) -> matcher.matches(e.getDtClass()));
         }
     }
 
     @Initializer(OnEntityPropertyCountChanged.class)
-    public void initPropertyCountChanged(final EventListener<OnEntityPropertyCountChanged> listener) {
+    public void initPropertyCountChanged(final Context context, final EventListener<OnEntityPropertyCountChanged> listener) {
         var classPattern = listener.getAnnotation().classPattern();
-        if (!".*".equals(classPattern)) {
+        if (".*".equals(classPattern)) {
+            listener.setFilter((OnEntityPropertyCountChanged.Filter) e -> context.getFilters().allowsEntity(e.getDtClass()));
+        } else {
             final var matcher = classPatternMatchers.computeIfAbsent(classPattern, ClassPatternMatcher::new);
             listener.setFilter((OnEntityPropertyCountChanged.Filter) e -> matcher.matches(e.getDtClass()));
         }
     }
 
     @Initializer(OnEntityEntered.class)
-    public void initOnEntityEntered(final EventListener<OnEntityEntered> listener) {
+    public void initOnEntityEntered(final Context context, final EventListener<OnEntityEntered> listener) {
         var classPattern = listener.getAnnotation().classPattern();
-        if (!".*".equals(classPattern)) {
+        if (".*".equals(classPattern)) {
+            listener.setFilter((OnEntityEntered.Filter) e -> context.getFilters().allowsEntity(e.getDtClass()));
+        } else {
             final var matcher = classPatternMatchers.computeIfAbsent(classPattern, ClassPatternMatcher::new);
             listener.setFilter((OnEntityEntered.Filter) e -> matcher.matches(e.getDtClass()));
         }
     }
 
     @Initializer(OnEntityLeft.class)
-    public void initOnEntityLeft(final EventListener<OnEntityLeft> listener) {
+    public void initOnEntityLeft(final Context context, final EventListener<OnEntityLeft> listener) {
         var classPattern = listener.getAnnotation().classPattern();
-        if (!".*".equals(classPattern)) {
+        if (".*".equals(classPattern)) {
+            listener.setFilter((OnEntityLeft.Filter) e -> context.getFilters().allowsEntity(e.getDtClass()));
+        } else {
             final var matcher = classPatternMatchers.computeIfAbsent(classPattern, ClassPatternMatcher::new);
             listener.setFilter((OnEntityLeft.Filter) e -> matcher.matches(e.getDtClass()));
         }
